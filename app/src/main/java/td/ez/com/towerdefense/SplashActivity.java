@@ -47,7 +47,6 @@ public class SplashActivity extends AppCompatActivity
             public void run()
             {
                 nameView.setVisibility(View.VISIBLE);
-                nameView.setHint("Pseudo");
                 validateButton.setVisibility(View.VISIBLE);
             }
         }, 3000);
