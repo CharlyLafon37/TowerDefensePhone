@@ -1,10 +1,16 @@
 package td.ez.com.towerdefense;
 
+import android.content.Intent;
 import android.os.Handler;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.transition.Explode;
+import android.transition.Slide;
+import android.view.Gravity;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -31,9 +37,12 @@ public class SplashActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-        super.onCreate(savedInstanceState);
+        getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
+        getWindow().setExitTransition(new Slide(Gravity.LEFT));
 
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+
         stateView = findViewById(R.id.state);
         nameView = findViewById(R.id.name);
         validateButton = findViewById(R.id.sendName);
@@ -71,7 +80,7 @@ public class SplashActivity extends AppCompatActivity
     {
         try
         {
-            socket = IO.socket("http://192.168.43.254:3000");
+            socket = IO.socket(getString(R.string.server_adress));
         }
         catch(URISyntaxException e)
         {
@@ -79,7 +88,6 @@ public class SplashActivity extends AppCompatActivity
         }
 
         setupSocketListeners(socket);
-
         socket.connect();
     }
 
@@ -143,10 +151,21 @@ public class SplashActivity extends AppCompatActivity
             @Override
             public void run()
             {
-                stateView.setText("Partie peut commencer.");
+                stateView.setText("Game on bitch.");
                 stateView.setTextColor(ContextCompat.getColor(SplashActivity.this, R.color.colorAccent));
                 loadingDots.setVisibility(View.GONE);
             }
         }, 2000);
+
+        Handler handlerLaunch = new Handler();
+        handlerLaunch.postDelayed(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                Intent gameActivity = new Intent(SplashActivity.this, GameActivity.class);
+                startActivity(gameActivity, ActivityOptionsCompat.makeSceneTransitionAnimation(SplashActivity.this).toBundle());
+            }
+        }, 4000);
     }
 }
