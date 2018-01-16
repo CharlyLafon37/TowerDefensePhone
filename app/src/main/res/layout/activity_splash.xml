@@ -30,8 +30,25 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/title"
-        android:text="En attente de commencement..."
-        android:textSize="15sp" />
+        android:text="En attente de commencement"
+        android:textSize="20sp" />
+
+    <com.eyalbira.loadingdots.LoadingDots
+        android:id="@+id/loadingDots"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toRightOf="@id/state"
+        app:layout_constraintBottom_toBottomOf="@id/state"
+        android:paddingBottom="5dp"
+        android:paddingLeft="1dp"
+
+        app:LoadingDots_auto_play="true"
+        app:LoadingDots_dots_color="@android:color/tertiary_text_light"
+        app:LoadingDots_dots_count="3"
+        app:LoadingDots_dots_size="3dp"
+        app:LoadingDots_dots_space="1dp"
+        app:LoadingDots_jump_duration="200"
+        app:LoadingDots_jump_height="4dp"/>
 
     <EditText
         android:id="@id/name"

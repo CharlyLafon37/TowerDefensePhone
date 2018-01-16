@@ -1,7 +1,7 @@
 package td.ez.com.towerdefense;
 
 import android.os.Handler;
-import android.support.design.widget.TextInputLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.eyalbira.loadingdots.LoadingDots;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
@@ -25,6 +26,7 @@ public class SplashActivity extends AppCompatActivity
     private TextView stateView;
     private EditText nameView;
     private Button validateButton;
+    private LoadingDots loadingDots;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -35,17 +37,19 @@ public class SplashActivity extends AppCompatActivity
         stateView = findViewById(R.id.state);
         nameView = findViewById(R.id.name);
         validateButton = findViewById(R.id.sendName);
+        loadingDots = findViewById(R.id.loadingDots);
 
         enableImmersiveMode();
 
         initSocket();
 
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable()
+        final Handler handler1 = new Handler();
+        handler1.postDelayed(new Runnable()
         {
             @Override
             public void run()
             {
+                stateView.setText("Collecte des pseudos en cours");
                 nameView.setVisibility(View.VISIBLE);
                 validateButton.setVisibility(View.VISIBLE);
             }
@@ -98,8 +102,8 @@ public class SplashActivity extends AppCompatActivity
                     else if(json.getString("action").equals("ready"))
                     {
                         stateView.setText("Partie peut commencer.");
-                        nameView.setVisibility(View.GONE);
-                        validateButton.setVisibility(View.GONE);
+                        stateView.setTextColor(ContextCompat.getColor(SplashActivity.this, R.color.colorAccent));
+                        loadingDots.setVisibility(View.GONE);
                     }
                 }
                 catch (JSONException e)
@@ -112,6 +116,9 @@ public class SplashActivity extends AppCompatActivity
 
     public void sendName(View v)
     {
+        nameView.setVisibility(View.GONE);
+        validateButton.setVisibility(View.GONE);
+
         try
         {
             JSONObject json = new JSONObject();
@@ -127,5 +134,19 @@ public class SplashActivity extends AppCompatActivity
         {
             e.printStackTrace();
         }
+
+        enableImmersiveMode();
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                stateView.setText("Partie peut commencer.");
+                stateView.setTextColor(ContextCompat.getColor(SplashActivity.this, R.color.colorAccent));
+                loadingDots.setVisibility(View.GONE);
+            }
+        }, 2000);
     }
 }
