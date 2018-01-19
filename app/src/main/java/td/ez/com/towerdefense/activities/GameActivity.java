@@ -129,10 +129,10 @@ public class GameActivity extends AppCompatActivity
                         JSONObject json = (JSONObject) args[0];
                         try
                         {
-                            String from = json.getString("De");
+                            String from = json.getString("from");
                             String message = json.getString("msg");
 
-                            Snackbar.make(findViewById(R.id.game_layout), "From " + from + " : " + message, Snackbar.LENGTH_SHORT)
+                            Snackbar.make(findViewById(R.id.game_layout), "De " + from + " : " + message, Snackbar.LENGTH_SHORT)
                                     .show();
                         }
                         catch(JSONException e)
