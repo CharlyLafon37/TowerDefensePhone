@@ -16,7 +16,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@id/gold_amount"
         app:layout_constraintTop_toTopOf="parent"
-        android:paddingTop="5dp"
+        android:layout_marginTop="25dp"
         android:textSize="20sp"/>
 
     <EditText
@@ -26,6 +26,7 @@
         app:layout_constraintLeft_toRightOf="@id/current_gold"
         app:layout_constraintRight_toLeftOf="@id/gold_send"
         app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="20dp"
         android:hint="Montant"/>
 
     <Button
@@ -35,6 +36,7 @@
         app:layout_constraintLeft_toRightOf="@id/gold_amount"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="20dp"
         android:text="Envoyer Or"
         android:onClick="onClickSendGold"/>
 
@@ -58,5 +60,16 @@
         android:text="Envoyer msg"
         android:layout_marginTop="50dp"
         android:onClick="onClickSendMessage"/>
+
+    <Button
+        android:id="@+id/power_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/message_tosend"
+        android:layout_marginTop="10dp"
+        android:text="Utiliser pouvoir "
+        android:onClick="onClickPowerButton"/>
 
 </android.support.constraint.ConstraintLayout>

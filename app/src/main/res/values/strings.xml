@@ -2,6 +2,7 @@
     <string name="app_name">TowerDefense</string>
 
     <string name="sp_pseudos">td.ez.com.towerdefense.sp_pseudos</string>
+    <string name="sp_power">td.ez.com.towerdefense.sp_power</string>
 
     <string name="dialog_pickplayer_title">Choisissez un joueur</string>
 </resources>

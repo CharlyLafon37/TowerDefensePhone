@@ -18,14 +18,12 @@ import android.widget.TextView;
 
 import com.eyalbira.loadingdots.LoadingDots;
 import com.github.nkzawa.emitter.Emitter;
-import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -68,6 +66,7 @@ public class SplashActivity extends AppCompatActivity
     {
         super.onPause();
         socket.off("setup");
+        socket.off("power");
     }
 
     private void enableImmersiveMode()
@@ -144,6 +143,27 @@ public class SplashActivity extends AppCompatActivity
                         }
                     }
                 });
+            }
+        });
+
+        socket.on("power", new Emitter.Listener()
+        {
+            @Override
+            public void call(final Object... args)
+            {
+                JSONObject json = (JSONObject) args[0];
+
+                SharedPreferences sharedPref = getSharedPreferences(getString(R.string.sp_power), Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                try
+                {
+                    editor.putString("power", json.getString("power"));
+                }
+                catch (JSONException e)
+                {
+                    e.printStackTrace();
+                }
+                editor.commit();
             }
         });
     }

@@ -11,6 +11,7 @@ import android.transition.Slide;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -41,6 +42,8 @@ public class GameActivity extends AppCompatActivity
 
     private Socket socket;
 
+    private String power;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -60,8 +63,13 @@ public class GameActivity extends AppCompatActivity
         currentGoldAmountView.setText(Integer.toString(currentGoldAmount));
 
         /********* Picking the player to whom send the message *******/
-        SharedPreferences sharedPref = getSharedPreferences(getString(R.string.sp_pseudos), Context.MODE_PRIVATE);
-        playerPseudo = sharedPref.getString("player_pseudo", "UNDEFINED");
+        SharedPreferences sharedPrefPlayers = getSharedPreferences(getString(R.string.sp_pseudos), Context.MODE_PRIVATE);
+        playerPseudo = sharedPrefPlayers.getString("player_pseudo", "UNDEFINED");
+
+        Button powerButton = findViewById(R.id.power_button);
+        SharedPreferences sharedPrefPower = getSharedPreferences(getString(R.string.sp_power), Context.MODE_PRIVATE);
+        power = sharedPrefPower.getString("power", "UNDEFINED");
+        powerButton.setText(powerButton.getText() + power);
     }
 
     private void enableImmersiveMode()
@@ -181,10 +189,11 @@ public class GameActivity extends AppCompatActivity
         try
         {
             JSONObject json = new JSONObject();
-            json.put("player", player);
+            json.put("from", playerPseudo);
+            json.put("to", player);
             json.put("amount", amount);
 
-            socket.emit("gold", json);
+            socket.emit("gift", json);
         }
         catch(JSONException e)
         {
@@ -234,6 +243,23 @@ public class GameActivity extends AppCompatActivity
             json.put("msg", message);
 
             socket.emit("message", json);
+        }
+        catch(JSONException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void onClickPowerButton(View v)
+    {
+        try
+        {
+            JSONObject json = new JSONObject();
+            json.put("player", playerPseudo);
+            json.put("power", power);
+
+            socket.emit("power", json);
+
         }
         catch(JSONException e)
         {
