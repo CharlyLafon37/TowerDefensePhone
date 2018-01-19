@@ -27,18 +27,19 @@ import java.util.Set;
 
 import td.ez.com.towerdefense.R;
 import td.ez.com.towerdefense.dialogs.PickPlayerDialog;
+import td.ez.com.towerdefense.network.SocketSingleton;
 
 /**
  * Would be very worth to build some data binding.
  */
 public class GameActivity extends AppCompatActivity
 {
-    private Socket socket;
-
     private int currentGoldAmount = 50;
     private TextView currentGoldAmountView;
 
     private String playerPseudo;
+
+    private Socket socket;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -52,7 +53,8 @@ public class GameActivity extends AppCompatActivity
 
         enableImmersiveMode();
 
-        initSocket();
+        socket = SocketSingleton.getInstance().getSocket();
+        setupSocketListeners(socket);
 
         currentGoldAmountView = findViewById(R.id.current_gold);
         currentGoldAmountView.setText(Integer.toString(currentGoldAmount));
@@ -73,21 +75,6 @@ public class GameActivity extends AppCompatActivity
                         | View.SYSTEM_UI_FLAG_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-    }
-
-    private void initSocket()
-    {
-        try
-        {
-            socket = IO.socket(getString(R.string.server_adress));
-        }
-        catch(URISyntaxException e)
-        {
-            e.printStackTrace();
-        }
-
-        setupSocketListeners(socket);
-        socket.connect();
     }
 
     private void setupSocketListeners(Socket socket)

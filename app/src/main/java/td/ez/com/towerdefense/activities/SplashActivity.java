@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import td.ez.com.towerdefense.R;
+import td.ez.com.towerdefense.network.SocketSingleton;
 
 public class SplashActivity extends AppCompatActivity
 {
@@ -58,14 +59,15 @@ public class SplashActivity extends AppCompatActivity
 
         enableImmersiveMode();
 
-        initSocket();
+        socket = SocketSingleton.getInstance().getSocket();
+        setupSocketListeners(socket);
     }
 
     @Override
     protected void onPause()
     {
         super.onPause();
-        socket.disconnect();
+        socket.off("setup");
     }
 
     private void enableImmersiveMode()
@@ -77,21 +79,6 @@ public class SplashActivity extends AppCompatActivity
                         | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-    }
-
-    private void initSocket()
-    {
-        try
-        {
-            socket = IO.socket(getString(R.string.server_adress));
-        }
-        catch(URISyntaxException e)
-        {
-            e.printStackTrace();
-        }
-
-        setupSocketListeners(socket);
-        socket.connect();
     }
 
     private void setupSocketListeners(Socket socket)
