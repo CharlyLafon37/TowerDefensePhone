@@ -1,11 +1,9 @@
 package td.ez.com.towerdefense.network;
 
 import com.github.nkzawa.socketio.client.IO;
-
-import java.net.URISyntaxException;
 import com.github.nkzawa.socketio.client.Socket;
 
-import td.ez.com.towerdefense.R;
+import java.net.URISyntaxException;
 
 /**
  * Created by Charly on 18/01/2018.
@@ -26,7 +24,7 @@ public class SocketSingleton
     {
         try
         {
-            socket = IO.socket("http://192.168.43.254:3000");
+            socket = IO.socket("http://192.168.43.254:9091");
         }
         catch(URISyntaxException e)
         {

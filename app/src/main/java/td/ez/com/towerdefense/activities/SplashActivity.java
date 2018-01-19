@@ -174,16 +174,16 @@ public class SplashActivity extends AppCompatActivity
         pseudoPlayer = nameView.getText().toString().trim();
         if(pseudoPlayer.isEmpty())
         {
-            /*validateButton.setBackgroundColor(ContextCompat.getColor(this, R.color.error));
+            validateButton.setBackgroundColor(ContextCompat.getColor(this, R.color.error));
             Handler handlerButtonGreen = new Handler(Looper.getMainLooper());
             handlerButtonGreen.postDelayed(new Runnable()
             {
                 @Override
                 public void run()
                 {
-                    validateButton.setBackgroundTintList();
+                    validateButton.setBackgroundColor(ContextCompat.getColor(SplashActivity.this, R.color.colorAccent));
                 }
-            }, 2000);*/
+            }, 2000);
             return;
         }
 
