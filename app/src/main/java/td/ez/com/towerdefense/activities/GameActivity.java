@@ -101,7 +101,8 @@ public class GameActivity extends AppCompatActivity
                         try
                         {
                             int amount = json.getInt("amount");
-                            Snackbar.make(findViewById(R.id.game_layout), "Received " + amount + " gold.", Snackbar.LENGTH_SHORT).show();
+                            Snackbar.make(findViewById(R.id.game_layout), "Received " + amount + " gold.", Snackbar.LENGTH_SHORT)
+                                    .show();
 
                             currentGoldAmount += amount;
                             currentGoldAmountView.setText(Integer.toString(currentGoldAmount));
@@ -128,10 +129,36 @@ public class GameActivity extends AppCompatActivity
                         JSONObject json = (JSONObject) args[0];
                         try
                         {
-                            String from = json.getString("from");
+                            String from = json.getString("De");
                             String message = json.getString("msg");
 
                             Snackbar.make(findViewById(R.id.game_layout), "From " + from + " : " + message, Snackbar.LENGTH_SHORT)
+                                    .show();
+                        }
+                        catch(JSONException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        });
+
+        socket.on("state", new Emitter.Listener()
+        {
+            @Override
+            public void call(final Object... args)
+            {
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        JSONObject json = (JSONObject) args[0];
+                        try
+                        {
+                            String action = json.getString("action");
+                            Snackbar.make(findViewById(R.id.game_layout), "Action : " + action, Snackbar.LENGTH_SHORT)
                                     .show();
                         }
                         catch(JSONException e)
@@ -159,6 +186,9 @@ public class GameActivity extends AppCompatActivity
             return;
         }
         final int amount = Integer.parseInt(amountView.getText().toString());
+
+        if(amount > currentGoldAmount || amount < 0)
+            return;
 
         /********* Picking the player to whom send the gold *******/
         SharedPreferences sharedPref = getSharedPreferences(getString(R.string.sp_pseudos), Context.MODE_PRIVATE);
@@ -206,8 +236,20 @@ public class GameActivity extends AppCompatActivity
 
     public void onClickSendMessage(View v)
     {
-        EditText messageView = findViewById(R.id.message_tosend);
-        final String message = messageView.getText().toString().trim();
+        String message;
+
+        switch(v.getId())
+        {
+            case R.id.msg_help :
+            {
+                message = "J'ai besoin d'argent !";
+                break;
+            }
+            default:
+                message = "UNDEFINED";
+        }
+
+        final String messageToSend = message;
 
         /********* Picking the player to whom send the message *******/
         SharedPreferences sharedPref = getSharedPreferences(getString(R.string.sp_pseudos), Context.MODE_PRIVATE);
@@ -221,7 +263,7 @@ public class GameActivity extends AppCompatActivity
             @Override
             public void onPlayerPicked(String playerName)
             {
-                sendMessage(playerName, message);
+                sendMessage(playerName, messageToSend);
 
                 // FUCKING TEMPORARY !!!!!!!!
                 enableImmersiveMode();

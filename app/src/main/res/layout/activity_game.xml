@@ -40,25 +40,16 @@
         android:text="Envoyer Or"
         android:onClick="onClickSendGold"/>
 
-    <EditText
-        android:id="@+id/message_tosend"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <ImageView
+        android:id="@+id/msg_help"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:scaleType="centerCrop"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/send_message"
-        app:layout_constraintTop_toBottomOf="@id/current_gold"
-        android:hint="Message"
-        android:layout_marginTop="50dp"/>
-
-    <Button
-        android:id="@+id/send_message"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintLeft_toRightOf="@id/message_tosend"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/current_gold"
-        android:text="Envoyer msg"
-        android:layout_marginTop="50dp"
+        android:src="@drawable/help"
+        android:layout_marginTop="30dp"
         android:onClick="onClickSendMessage"/>
 
     <Button
@@ -67,7 +58,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/message_tosend"
+        app:layout_constraintTop_toBottomOf="@id/msg_help"
         android:layout_marginTop="10dp"
         android:text="Utiliser pouvoir "
         android:onClick="onClickPowerButton"/>

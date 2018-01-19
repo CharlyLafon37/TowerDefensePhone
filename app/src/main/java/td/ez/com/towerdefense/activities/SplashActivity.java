@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -170,10 +171,24 @@ public class SplashActivity extends AppCompatActivity
 
     public void sendName(View v)
     {
+        pseudoPlayer = nameView.getText().toString().trim();
+        if(pseudoPlayer.isEmpty())
+        {
+            /*validateButton.setBackgroundColor(ContextCompat.getColor(this, R.color.error));
+            Handler handlerButtonGreen = new Handler(Looper.getMainLooper());
+            handlerButtonGreen.postDelayed(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    validateButton.setBackgroundTintList();
+                }
+            }, 2000);*/
+            return;
+        }
+
         nameView.setVisibility(View.GONE);
         validateButton.setVisibility(View.GONE);
-
-        pseudoPlayer = nameView.getText().toString().trim();
 
         try
         {
