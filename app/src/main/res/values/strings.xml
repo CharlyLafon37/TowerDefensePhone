@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">TowerDefense</string>
+
     <string name="server_adress">http://192.168.43.254:3000</string>
+
+    <string name="sp_pseudos">td.ez.com.towerdefense.sp_pseudos</string>
+
+    <string name="dialog_pickplayer_title">Choisissez un joueur</string>
 </resources>

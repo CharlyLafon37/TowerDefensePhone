@@ -7,7 +7,7 @@
     android:animateLayoutChanges="true"
     android:focusableInTouchMode="true"
     android:focusable="true"
-    tools:context="td.ez.com.towerdefense.SplashActivity">
+    tools:context="td.ez.com.towerdefense.activities.SplashActivity">
 
     <TextView
         android:id="@+id/title"

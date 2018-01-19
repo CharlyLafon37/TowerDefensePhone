@@ -7,12 +7,12 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="buttonStyle">@style/ButtonBase</item>
-    </style>
-    
-    <style name="SplashTheme" parent="AppTheme">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+    
+    <style name="SplashTheme" parent="AppTheme">
         <item name="android:background">@color/colorPrimary</item>
     </style>
 
