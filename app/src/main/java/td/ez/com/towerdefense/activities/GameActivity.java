@@ -275,6 +275,9 @@ public class GameActivity extends AppCompatActivity
             default: amount = 0;
         }
 
+        if(amount > currentGoldAmount)
+            return;
+
         DialogFragment dialogFragment = new PickPlayerDialog();
         Bundle args = new Bundle();
         args.putStringArrayList("names", (ArrayList<String>) othersPseudos);
