@@ -9,6 +9,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 import td.ez.com.towerdefense.R;
@@ -19,21 +20,21 @@ import td.ez.com.towerdefense.R;
 
 public class PickPlayerDialog extends DialogFragment
 {
-    private Set<String> names;
+    private List<String> names;
 
     public interface PickPlayerListener extends Serializable
     {
         void onPlayerPicked(String playerName);
     }
 
-    PickPlayerListener listener;
+    private PickPlayerListener listener;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         Bundle bundle = getArguments();
-        names = (Set) bundle.getSerializable("names");
+        names = bundle.getStringArrayList("names");
         listener = (PickPlayerListener) bundle.get("listener");
     }
 

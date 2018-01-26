@@ -25,7 +25,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import td.ez.com.towerdefense.R;
@@ -33,6 +35,11 @@ import td.ez.com.towerdefense.network.SocketSingleton;
 
 public class SplashActivity extends AppCompatActivity
 {
+    public static final String EXTRA_PSEUDO_PLAYER = "td.ez.com.towerdefense.extrapseudoplayer";
+    public static final String EXTRA_PSEUDO_OTHERS = "td.ez.com.towerdefense.extrapseudoothers";
+    public static final String EXTRA_POWER = "td.ez.com.towerdefense.power";
+    public static final String EXTRA_GOLD = "td.ez.com.towerdefense.gold";
+
     private Socket socket;
 
     private TextView stateView;
@@ -41,6 +48,11 @@ public class SplashActivity extends AppCompatActivity
     private LoadingDots loadingDots;
 
     private String pseudoPlayer;
+    private List<String> pseudoOthers = new ArrayList<>();
+
+    private String power;
+
+    private int currentGold;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -102,24 +114,17 @@ public class SplashActivity extends AppCompatActivity
                                 nameView.setVisibility(View.VISIBLE);
                                 validateButton.setVisibility(View.VISIBLE);
                             }
+
                             else if(json.getString("action").equals("ready"))
                             {
-                                /***** Saving the other players' pseudos *****/
                                 JSONArray namesJson = json.getJSONArray("names");
-                                Set<String> names = new HashSet<>();
 
                                 for(int i = 0; i < namesJson.length(); i++)
                                 {
-                                    if(namesJson.getString(i).equals(pseudoPlayer)) // Not registering the player's pseudo
+                                    if(namesJson.getString(i).equals(pseudoPlayer)) // Not accounting the player's pseudo
                                         continue;
-                                    names.add(namesJson.getString(i));
+                                    pseudoOthers.add(namesJson.getString(i));
                                 }
-
-                                SharedPreferences sharedPref = getSharedPreferences(getString(R.string.sp_pseudos), Context.MODE_PRIVATE);
-                                SharedPreferences.Editor editor = sharedPref.edit();
-                                editor.putStringSet("other_pseudos", names);
-                                editor.commit();
-                                /********/
 
                                 stateView.setText("La partie peut commencer.");
                                 stateView.setTextColor(ContextCompat.getColor(SplashActivity.this, R.color.colorAccent));
@@ -132,8 +137,7 @@ public class SplashActivity extends AppCompatActivity
                                     @Override
                                     public void run()
                                     {
-                                        Intent gameActivity = new Intent(SplashActivity.this, GameActivity.class);
-                                        startActivity(gameActivity, ActivityOptionsCompat.makeSceneTransitionAnimation(SplashActivity.this).toBundle());
+                                        launchGameActivity();
                                     }
                                 }, 2000);
                             }
@@ -154,17 +158,32 @@ public class SplashActivity extends AppCompatActivity
             {
                 JSONObject json = (JSONObject) args[0];
 
-                SharedPreferences sharedPref = getSharedPreferences(getString(R.string.sp_power), Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPref.edit();
                 try
                 {
-                    editor.putString("power", json.getString("power"));
+                    power = json.getString("power");
                 }
                 catch (JSONException e)
                 {
                     e.printStackTrace();
                 }
-                editor.commit();
+            }
+        });
+
+        socket.on("gold", new Emitter.Listener()
+        {
+            @Override
+            public void call(final Object... args)
+            {
+                JSONObject json = (JSONObject) args[0];
+
+                try
+                {
+                    currentGold = json.getInt("amount");
+                }
+                catch(JSONException e)
+                {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -174,7 +193,7 @@ public class SplashActivity extends AppCompatActivity
         pseudoPlayer = nameView.getText().toString().trim();
         if(pseudoPlayer.isEmpty())
         {
-            validateButton.setBackgroundColor(ContextCompat.getColor(this, R.color.error));
+            /*validateButton.setBackgroundColor(ContextCompat.getColor(this, R.color.error));
             Handler handlerButtonGreen = new Handler(Looper.getMainLooper());
             handlerButtonGreen.postDelayed(new Runnable()
             {
@@ -183,7 +202,7 @@ public class SplashActivity extends AppCompatActivity
                 {
                     validateButton.setBackgroundColor(ContextCompat.getColor(SplashActivity.this, R.color.colorAccent));
                 }
-            }, 2000);
+            }, 2000);*/
             return;
         }
 
@@ -206,12 +225,17 @@ public class SplashActivity extends AppCompatActivity
             e.printStackTrace();
         }
 
-        /***** Registering the player's pseudo *****/
-        SharedPreferences sharedPref = getSharedPreferences(getString(R.string.sp_pseudos), Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("player_pseudo", pseudoPlayer);
-        editor.commit();
-
         enableImmersiveMode();
+    }
+
+    private void launchGameActivity()
+    {
+        Intent gameActivity = new Intent(SplashActivity.this, GameActivity.class);
+        gameActivity.putExtra(EXTRA_PSEUDO_PLAYER, pseudoPlayer);
+        gameActivity.putStringArrayListExtra(EXTRA_PSEUDO_OTHERS, (ArrayList<String>) pseudoOthers);
+        gameActivity.putExtra(EXTRA_POWER, power);
+        gameActivity.putExtra(EXTRA_GOLD, currentGold);
+
+        startActivity(gameActivity, ActivityOptionsCompat.makeSceneTransitionAnimation(SplashActivity.this).toBundle());
     }
 }

@@ -10,47 +10,175 @@
     tools:context="td.ez.com.towerdefense.activities.GameActivity">
 
     <TextView
-        android:id="@+id/current_gold"
+        android:id="@+id/pseudo_player"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/gold_amount"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="25dp"
-        android:textSize="20sp"/>
-
-    <EditText
-        android:id="@+id/gold_amount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintLeft_toRightOf="@id/current_gold"
-        app:layout_constraintRight_toLeftOf="@id/gold_send"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="20dp"
-        android:hint="Montant"/>
-
-    <Button
-        android:id="@+id/gold_send"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintLeft_toRightOf="@id/gold_amount"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="20dp"
-        android:text="Envoyer Or"
-        android:onClick="onClickSendGold"/>
+        android:textSize="25sp" />
 
+    <include
+        layout="@layout/content_gold"
+        android:id="@+id/gold_card"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/pseudo_player"/>
+    
     <ImageView
-        android:id="@+id/msg_help"
+        android:id="@+id/img_windmill"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:scaleType="centerCrop"
         app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/gold_card"
+        app:layout_constraintRight_toLeftOf="@id/windmill_pdv"
+        app:layout_constraintBottom_toTopOf="@id/img_castle"
+        android:src="@drawable/windmill"/>
+
+    <LinearLayout
+        android:id="@+id/windmill_pdv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toRightOf="@id/img_windmill"
+        app:layout_constraintTop_toBottomOf="@id/gold_card"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/current_gold"
-        android:src="@drawable/help"
-        android:layout_marginTop="30dp"
-        android:onClick="onClickSendMessage"/>
+        app:layout_constraintBottom_toTopOf="@id/img_castle"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="3dp"
+            android:text="30 / 30"
+            android:textSize="20sp"/>
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginLeft="3dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/heart"/>
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/img_castle"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/img_windmill"
+        app:layout_constraintRight_toLeftOf="@id/castle_pdv"
+        app:layout_constraintBottom_toTopOf="@id/img_church"
+        android:src="@drawable/castle"/>
+
+    <LinearLayout
+        android:id="@+id/castle_pdv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toRightOf="@id/img_castle"
+        app:layout_constraintTop_toBottomOf="@id/img_windmill"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/img_church"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="3dp"
+            android:text="20 / 20"
+            android:textSize="20sp"/>
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginLeft="3dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/heart"/>
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/img_church"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/img_castle"
+        app:layout_constraintRight_toLeftOf="@id/church_pdv"
+        app:layout_constraintBottom_toTopOf="@id/img_tavern"
+        android:src="@drawable/church"/>
+
+    <LinearLayout
+        android:id="@+id/church_pdv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toRightOf="@id/img_church"
+        app:layout_constraintTop_toBottomOf="@id/img_castle"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/img_tavern"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="10 / 10"
+            android:textSize="20sp"
+            android:layout_marginRight="3dp"/>
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginLeft="3dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/heart"/>
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/img_tavern"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/img_church"
+        app:layout_constraintRight_toLeftOf="@id/tavern_pdv"
+        app:layout_constraintBottom_toTopOf="@id/power_button"
+        android:src="@drawable/tavern"/>
+
+    <LinearLayout
+        android:id="@+id/tavern_pdv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toRightOf="@id/img_tavern"
+        app:layout_constraintTop_toBottomOf="@id/img_church"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/power_button"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="90 / 90"
+            android:textSize="20sp"
+            android:layout_marginRight="3dp"/>
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginLeft="3dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/heart"/>
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/power_button"
@@ -58,7 +186,8 @@
         android:layout_height="wrap_content"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/msg_help"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:theme="@style/ButtonBase"
         android:layout_marginTop="10dp"
         android:text="Utiliser pouvoir "
         android:onClick="onClickPowerButton"/>
