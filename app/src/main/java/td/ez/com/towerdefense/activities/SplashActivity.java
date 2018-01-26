@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 import td.ez.com.towerdefense.R;
+import td.ez.com.towerdefense.enums.Power;
 import td.ez.com.towerdefense.network.SocketSingleton;
 
 public class SplashActivity extends AppCompatActivity
@@ -50,7 +51,7 @@ public class SplashActivity extends AppCompatActivity
     private String pseudoPlayer;
     private List<String> pseudoOthers = new ArrayList<>();
 
-    private String power;
+    private Power power;
 
     private int currentGold;
 
@@ -160,7 +161,24 @@ public class SplashActivity extends AppCompatActivity
 
                 try
                 {
-                    power = json.getString("power");
+                    switch(json.getString("power"))
+                    {
+                        case "fire" :
+                        {
+                            power = Power.FIRE;
+                            break;
+                        }
+                        case "ice" :
+                        {
+                            power = Power.ICE;
+                            break;
+                        }
+                        case "thunder" :
+                        {
+                            power = Power.THUNDER;
+                            break;
+                        }
+                    }
                 }
                 catch (JSONException e)
                 {

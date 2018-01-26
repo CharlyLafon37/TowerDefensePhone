@@ -3,6 +3,7 @@ package td.ez.com.towerdefense.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.CountDownTimer;
 import android.os.Vibrator;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.github.nkzawa.emitter.Emitter;
@@ -23,6 +25,7 @@ import com.github.nkzawa.socketio.client.Socket;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -33,6 +36,7 @@ import java.util.Set;
 import td.ez.com.towerdefense.R;
 import td.ez.com.towerdefense.dialogs.CustomGoldDialog;
 import td.ez.com.towerdefense.dialogs.PickPlayerDialog;
+import td.ez.com.towerdefense.enums.Power;
 import td.ez.com.towerdefense.network.SocketSingleton;
 
 /**
@@ -46,7 +50,9 @@ public class GameActivity extends AppCompatActivity
     private String playerPseudo;
     private List<String> othersPseudos;
 
-    private String power;
+    private Power power;
+    private boolean powerEnabled = true;
+    private ImageView powerButton;
 
     private Socket socket;
 
@@ -72,7 +78,7 @@ public class GameActivity extends AppCompatActivity
         Intent launchIntent = getIntent();
         playerPseudo = launchIntent.getStringExtra(SplashActivity.EXTRA_PSEUDO_PLAYER);
         othersPseudos = launchIntent.getStringArrayListExtra(SplashActivity.EXTRA_PSEUDO_OTHERS);
-        power = launchIntent.getStringExtra(SplashActivity.EXTRA_POWER);
+        power = (Power) launchIntent.getSerializableExtra(SplashActivity.EXTRA_POWER);
         currentGoldAmount = launchIntent.getIntExtra(SplashActivity.EXTRA_GOLD, 0);
 
         TextView pseudoView = findViewById(R.id.pseudo_player);
@@ -81,8 +87,8 @@ public class GameActivity extends AppCompatActivity
         currentGoldAmountView = findViewById(R.id.current_gold);
         currentGoldAmountView.setText(Integer.toString(currentGoldAmount));
 
-        Button powerButton = findViewById(R.id.power_button);
-        powerButton.setText(powerButton.getText() + power);
+        powerButton = findViewById(R.id.power_button);
+        powerButton.setImageDrawable(getDrawable(power.getPowerEnabledDrawable()));
     }
 
     private void enableImmersiveMode()
@@ -348,6 +354,11 @@ public class GameActivity extends AppCompatActivity
         {
             e.printStackTrace();
         }
+
+        Snackbar.make(
+                findViewById(R.id.game_layout),
+                "Demande d'aide envoyée aux autres défenseurs.",
+                Snackbar.LENGTH_SHORT).show();
     }
 
 
@@ -358,18 +369,45 @@ public class GameActivity extends AppCompatActivity
 
     public void onClickPowerButton(View v)
     {
-        try
+        if(powerEnabled)
         {
-            JSONObject json = new JSONObject();
-            json.put("player", playerPseudo);
-            json.put("power", power);
+            try
+            {
+                JSONObject json = new JSONObject();
+                json.put("player", playerPseudo);
+                json.put("power", power);
 
-            socket.emit("power", json);
+                socket.emit("power", json);
 
-        }
-        catch(JSONException e)
-        {
-            e.printStackTrace();
+            }
+            catch(JSONException e)
+            {
+                e.printStackTrace();
+            }
+
+            powerEnabled = false;
+            powerButton.setImageDrawable(getDrawable(power.getPowerDisabledDrawable()));
+
+            final TextView timerView = findViewById(R.id.power_button_timer);
+            timerView.setVisibility(View.VISIBLE);
+            CountDownTimer timer = new CountDownTimer(5000, 1000)
+            {
+                @Override
+                public void onTick(long l)
+                {
+                    timerView.setText(Integer.toString(((int) l) / 1000));
+                }
+
+                @Override
+                public void onFinish()
+                {
+                    powerEnabled = true;
+                    powerButton.setImageDrawable(getDrawable(power.getPowerEnabledDrawable()));
+                    vibrator.vibrate(150);
+                    timerView.setVisibility(View.INVISIBLE);
+                }
+            };
+            timer.start();
         }
     }
 }

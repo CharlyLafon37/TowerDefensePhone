@@ -150,7 +150,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/img_church"
         app:layout_constraintRight_toLeftOf="@id/tavern_pdv"
-        app:layout_constraintBottom_toTopOf="@id/power_button"
+        app:layout_constraintBottom_toTopOf="@id/power_button_container"
         android:src="@drawable/tavern"/>
 
     <LinearLayout
@@ -160,7 +160,7 @@
         app:layout_constraintLeft_toRightOf="@id/img_tavern"
         app:layout_constraintTop_toBottomOf="@id/img_church"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/power_button"
+        app:layout_constraintBottom_toTopOf="@id/power_button_container"
         android:orientation="horizontal">
 
         <TextView
@@ -180,16 +180,33 @@
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/power_button"
+    <FrameLayout
+        android:id="@+id/power_button_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:theme="@style/ButtonBase"
         android:layout_marginTop="10dp"
-        android:text="Utiliser pouvoir "
-        android:onClick="onClickPowerButton"/>
+        android:onClick="onClickPowerButton">
+
+        <ImageView
+            android:id="@+id/power_button"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:scaleType="centerCrop"/>
+
+        <TextView
+            android:id="@+id/power_button_timer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:visibility="invisible"/>
+
+    </FrameLayout>
+
+
 
 </android.support.constraint.ConstraintLayout>
