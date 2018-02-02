@@ -51,6 +51,8 @@ public class SplashActivity extends AppCompatActivity
     private String pseudoPlayer;
     private List<String> pseudoOthers = new ArrayList<>();
 
+    private String colorPlayer;
+
     private Power power;
 
     private int currentGold;
@@ -127,9 +129,14 @@ public class SplashActivity extends AppCompatActivity
                                     pseudoOthers.add(namesJson.getString(i));
                                 }
 
+                                stateView.setText("Placé vautre tague couleure " + colorPlayer + " sure la tabl.");
+                                loadingDots.setVisibility(View.GONE);
+                            }
+
+                            else if(json.getString("action").equals("start"))
+                            {
                                 stateView.setText("La partie peut commencer.");
                                 stateView.setTextColor(ContextCompat.getColor(SplashActivity.this, R.color.colorAccent));
-                                loadingDots.setVisibility(View.GONE);
 
                                 /***** Launching the game : starting a new activity *****/
                                 Handler handlerLaunch = new Handler();
@@ -202,6 +209,32 @@ public class SplashActivity extends AppCompatActivity
                 {
                     e.printStackTrace();
                 }
+            }
+        });
+
+        socket.on("tag", new Emitter.Listener()
+        {
+            @Override
+            public void call(final Object... args)
+            {
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        JSONObject json = (JSONObject) args[0];
+
+                        try
+                        {
+                            String color = json.getString("color");
+                            colorPlayer = color;
+                        }
+                        catch(JSONException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                });
             }
         });
     }

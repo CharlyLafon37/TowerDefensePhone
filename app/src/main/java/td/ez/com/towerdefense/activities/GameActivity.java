@@ -3,6 +3,8 @@ package td.ez.com.towerdefense.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Point;
+import android.graphics.Typeface;
 import android.os.CountDownTimer;
 import android.os.Vibrator;
 import android.support.design.widget.Snackbar;
@@ -44,6 +46,9 @@ import td.ez.com.towerdefense.network.SocketSingleton;
  */
 public class GameActivity extends AppCompatActivity
 {
+    public static final String EXTRA_PLAYERPSEUDO = "td.ez.com.towerdefense.playerpseudo";
+    public static final String EXTRA_GOLD = "td.ez.com.towerdefense.gold";
+
     private int currentGoldAmount;
     private TextView currentGoldAmountView;
 
@@ -52,6 +57,7 @@ public class GameActivity extends AppCompatActivity
 
     private Power power;
     private boolean powerEnabled = true;
+    private boolean powerCancelMode = false;
     private ImageView powerButton;
 
     private Socket socket;
@@ -87,6 +93,7 @@ public class GameActivity extends AppCompatActivity
         currentGoldAmountView = findViewById(R.id.current_gold);
         currentGoldAmountView.setText(Integer.toString(currentGoldAmount));
 
+        power = Power.FIRE;
         powerButton = findViewById(R.id.power_button);
         powerButton.setImageDrawable(getDrawable(power.getPowerEnabledDrawable()));
     }
@@ -249,8 +256,56 @@ public class GameActivity extends AppCompatActivity
                 });
             }
         });
-    }
 
+        socket.on("power", new Emitter.Listener()
+        {
+            @Override
+            public void call(final Object... args)
+            {
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        JSONObject json = (JSONObject) args[0];
+                        try
+                        {
+                            if(json.getBoolean("used") == true)
+                            {
+                                powerEnabled = false;
+                                powerButton.setImageDrawable(getDrawable(power.getPowerDisabledDrawable()));
+
+                                final TextView textPowerView = findViewById(R.id.power_button_text);
+                                CountDownTimer timer = new CountDownTimer(5000, 1000)
+                                {
+                                    @Override
+                                    public void onTick(long l)
+                                    {
+                                        textPowerView.setText(Integer.toString(((int) l) / 1000));
+                                    }
+
+                                    @Override
+                                    public void onFinish()
+                                    {
+                                        powerEnabled = true;
+                                        powerButton.setImageDrawable(getDrawable(power.getPowerEnabledDrawable()));
+                                        vibrator.vibrate(150);
+                                        textPowerView.setVisibility(View.INVISIBLE);
+                                    }
+                                };
+                                timer.start();
+                            }
+                        }
+                        catch(JSONException e)
+                        {
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
+            }
+        });
+    }
 
     /************       **********
      ************ GOLD **********
@@ -375,39 +430,47 @@ public class GameActivity extends AppCompatActivity
             {
                 JSONObject json = new JSONObject();
                 json.put("player", playerPseudo);
-                json.put("power", power);
+                json.put("power", power.toString());
+
+                if(!powerCancelMode)
+                    json.put("action", "use");
+                else
+                    json.put("action", "cancel");
 
                 socket.emit("power", json);
-
             }
             catch(JSONException e)
             {
                 e.printStackTrace();
             }
 
-            powerEnabled = false;
-            powerButton.setImageDrawable(getDrawable(power.getPowerDisabledDrawable()));
-
-            final TextView timerView = findViewById(R.id.power_button_timer);
-            timerView.setVisibility(View.VISIBLE);
-            CountDownTimer timer = new CountDownTimer(5000, 1000)
+            final TextView textPowerView = findViewById(R.id.power_button_text);
+            if(!powerCancelMode)
             {
-                @Override
-                public void onTick(long l)
-                {
-                    timerView.setText(Integer.toString(((int) l) / 1000));
-                }
-
-                @Override
-                public void onFinish()
-                {
-                    powerEnabled = true;
-                    powerButton.setImageDrawable(getDrawable(power.getPowerEnabledDrawable()));
-                    vibrator.vibrate(150);
-                    timerView.setVisibility(View.INVISIBLE);
-                }
-            };
-            timer.start();
+                textPowerView.setVisibility(View.VISIBLE);
+                textPowerView.setText("X");
+                textPowerView.setTypeface(null, Typeface.BOLD);
+                textPowerView.setTextSize(35f);
+                powerCancelMode = true;
+            }
+            else
+            {
+                textPowerView.setVisibility(View.INVISIBLE);
+                powerCancelMode = false;
+            }
         }
+    }
+
+    /************       **********
+     ************ TRAP  **********
+     ************       **********/
+
+    public void launchTrapActivity(View v)
+    {
+        Intent intent = new Intent(this, TrapActivity.class);
+        intent.putExtra(EXTRA_PLAYERPSEUDO, playerPseudo);
+        intent.putExtra(EXTRA_GOLD, currentGoldAmount);
+
+        startActivity(intent);
     }
 }

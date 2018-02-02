@@ -10,17 +10,19 @@ import td.ez.com.towerdefense.R;
 
 public enum Power
 {
-    FIRE(R.drawable.fire, R.drawable.fire_disabled),
-    ICE(R.drawable.ice, R.drawable.ice_disabled),
-    THUNDER(R.drawable.thunder, R.drawable.thunder_disabled);
+    FIRE(R.drawable.fire, R.drawable.fire_disabled, "fire"),
+    ICE(R.drawable.ice, R.drawable.ice_disabled, "ice"),
+    THUNDER(R.drawable.thunder, R.drawable.thunder_disabled, "thunder");
 
     private int resPowerEnabledDrawable;
     private int resPowerDisabledDrawable;
+    private String power;
 
-    Power(int resPowerEnabledDrawable, int resPowerDisabledDrawable)
+    Power(int resPowerEnabledDrawable, int resPowerDisabledDrawable, String power)
     {
         this.resPowerEnabledDrawable = resPowerEnabledDrawable;
         this.resPowerDisabledDrawable = resPowerDisabledDrawable;
+        this.power = power;
     }
 
     public int getPowerEnabledDrawable()
@@ -32,4 +34,6 @@ public enum Power
     {
         return resPowerDisabledDrawable;
     }
+
+    public String toString() { return power; }
 }

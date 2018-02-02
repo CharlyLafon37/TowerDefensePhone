@@ -185,7 +185,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/trap"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginTop="10dp"
         android:onClick="onClickPowerButton">
@@ -197,7 +197,7 @@
             android:scaleType="centerCrop"/>
 
         <TextView
-            android:id="@+id/power_button_timer"
+            android:id="@+id/power_button_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -207,6 +207,16 @@
 
     </FrameLayout>
 
-
+    <ImageView
+        android:id="@+id/trap"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:paddingTop="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/power_button_container"
+        android:src="@drawable/trap"
+        android:scaleType="centerCrop"
+        android:onClick="launchTrapActivity"/>
 
 </android.support.constraint.ConstraintLayout>
