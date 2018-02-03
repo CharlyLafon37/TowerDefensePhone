@@ -73,17 +73,10 @@ public class SplashActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onPause()
+    protected void onStop()
     {
-        super.onPause();
+        super.onStop();
         socket.off();
-    }
-
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-        setupSocketListeners();
     }
 
     private void enableImmersiveMode()
