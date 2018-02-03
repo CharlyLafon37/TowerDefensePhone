@@ -46,6 +46,9 @@ import td.ez.com.towerdefense.network.SocketSingleton;
  */
 public class GameActivity extends AppCompatActivity
 {
+    public static final int REQUEST_CODE_TRAP = 1;
+    public static final String EXTRA_RESULT_GOLD = "td.ez.com.towerdefense.resultgold";
+
     public static final String EXTRA_PLAYERPSEUDO = "td.ez.com.towerdefense.playerpseudo";
     public static final String EXTRA_GOLD = "td.ez.com.towerdefense.gold";
 
@@ -77,7 +80,7 @@ public class GameActivity extends AppCompatActivity
         enableImmersiveMode();
 
         socket = SocketSingleton.getInstance().getSocket();
-        setupSocketListeners(socket);
+        setupSocketListeners();
 
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
@@ -93,7 +96,6 @@ public class GameActivity extends AppCompatActivity
         currentGoldAmountView = findViewById(R.id.current_gold);
         currentGoldAmountView.setText(Integer.toString(currentGoldAmount));
 
-        power = Power.FIRE;
         powerButton = findViewById(R.id.power_button);
         powerButton.setImageDrawable(getDrawable(power.getPowerEnabledDrawable()));
     }
@@ -104,7 +106,7 @@ public class GameActivity extends AppCompatActivity
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
     }
 
-    private void setupSocketListeners(Socket socket)
+    private void setupSocketListeners()
     {
         socket.on("gift", new Emitter.Listener()
         {
@@ -270,7 +272,7 @@ public class GameActivity extends AppCompatActivity
                         JSONObject json = (JSONObject) args[0];
                         try
                         {
-                            if(json.getBoolean("used") == true)
+                            if(json.getString("status").equals("success"))
                             {
                                 powerEnabled = false;
                                 powerButton.setImageDrawable(getDrawable(power.getPowerDisabledDrawable()));

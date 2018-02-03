@@ -3,6 +3,7 @@ package td.ez.com.towerdefense.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.eyalbira.loadingdots.LoadingDots;
@@ -74,7 +76,7 @@ public class SplashActivity extends AppCompatActivity
         enableImmersiveMode();
 
         socket = SocketSingleton.getInstance().getSocket();
-        setupSocketListeners(socket);
+        setupSocketListeners();
     }
 
     @Override
@@ -83,6 +85,13 @@ public class SplashActivity extends AppCompatActivity
         super.onPause();
         socket.off("setup");
         socket.off("power");
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        setupSocketListeners();
     }
 
     private void enableImmersiveMode()
@@ -96,7 +105,7 @@ public class SplashActivity extends AppCompatActivity
                         | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     }
 
-    private void setupSocketListeners(Socket socket)
+    private void setupSocketListeners()
     {
         socket.on("setup", new Emitter.Listener()
         {
@@ -129,7 +138,7 @@ public class SplashActivity extends AppCompatActivity
                                     pseudoOthers.add(namesJson.getString(i));
                                 }
 
-                                stateView.setText("Placé vautre tague couleure " + colorPlayer + " sure la tabl.");
+                                stateView.setText("Placez votre tag couleur " + colorPlayer + " sur la table.");
                                 loadingDots.setVisibility(View.GONE);
                             }
 

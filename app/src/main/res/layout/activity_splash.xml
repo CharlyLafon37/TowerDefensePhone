@@ -7,8 +7,8 @@
     android:animateLayoutChanges="true"
     android:focusableInTouchMode="true"
     android:focusable="true"
-    android:paddingLeft="8dp"
-    android:paddingRight="8dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
     tools:context="td.ez.com.towerdefense.activities.SplashActivity">
 
     <TextView
@@ -25,24 +25,13 @@
         android:textStyle="bold"/>
 
     <TextView
-        android:id="@+id/instructions"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title"
-        app:layout_constraintBottom_toTopOf="@id/state"
-        android:textSize="20sp"
-        android:visibility="gone"/>
-
-    <TextView
         android:id="@+id/state"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toTopOf="@+id/name"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/instructions"
+        app:layout_constraintTop_toBottomOf="@id/title"
         android:text="En attente de commencement"
         android:textSize="20sp" />
 

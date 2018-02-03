@@ -1,6 +1,7 @@
 package td.ez.com.towerdefense.activities;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -38,6 +39,8 @@ public class TrapActivity extends AppCompatActivity
 
     private Socket socket;
 
+    private Point lastNewTrapPosition;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -51,7 +54,7 @@ public class TrapActivity extends AppCompatActivity
         currentGoldAmount = intent.getIntExtra(GameActivity.EXTRA_GOLD, 0);
 
         socket = SocketSingleton.getInstance().getSocket();
-        setupSocketListeners(socket);
+        setupSocketListeners();
 
         final PhotoView mapView = findViewById(R.id.mapView);
         mapView.setImageResource(R.drawable.map);
@@ -78,6 +81,7 @@ public class TrapActivity extends AppCompatActivity
                 pointR[1] /= (screenHeight/REFERENCE_HEIGHT);
 
                 Point position = new Point((int) pointR[0], (int) pointR[1]);
+                lastNewTrapPosition = position;
                 sendTrap(position);
             }
         });
@@ -89,7 +93,7 @@ public class TrapActivity extends AppCompatActivity
         screenHeight = metrics.heightPixels;
     }
 
-    private void setupSocketListeners(Socket socket)
+    private void setupSocketListeners()
     {
         socket.on("trap", new Emitter.Listener()
         {
@@ -106,7 +110,25 @@ public class TrapActivity extends AppCompatActivity
                         {
                             if(json.getString("status").equals("success"))
                             {
+                                ImageView trapImg = new ImageView(TrapActivity.this);
+                                int nbPixels = convertDpToPixel(30);
+                                trapImg.setLayoutParams(new FrameLayout.LayoutParams(nbPixels, nbPixels));
 
+                                trapImg.setImageResource(R.drawable.trap_spiderweb);
+                                trapImg.setX(lastNewTrapPosition.x - 15);
+                                trapImg.setY(lastNewTrapPosition.y - 15);
+
+                                FrameLayout frameLayout = findViewById(R.id.layout_trap);
+                                frameLayout.addView(trapImg);
+
+                                new Handler().postDelayed(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        finish();
+                                    }
+                                }, 2000);
                             }
                         }
                         catch(JSONException e)
@@ -148,8 +170,6 @@ public class TrapActivity extends AppCompatActivity
                 json.put("position", positionJson);
 
                 socket.emit("trap", json);
-
-                finish();
             }
             catch(JSONException e)
             {
@@ -172,17 +192,13 @@ public class TrapActivity extends AppCompatActivity
                 }
             }, 2000);
         }
-
-        // Mocking the response from the server
-        mockResponse();
     }
 
-    private void mockResponse()
+    private int convertDpToPixel(int dp)
     {
-        /*ImageView trapImg = new ImageView(this);
-        trapImg.setLayoutParams(new FrameLayout.LayoutParams());
-
-        FrameLayout frameLayout = findViewById(R.id.layout_trap);
-        FrameLayout.LayoutParams params = frameLayout.getLayoutParams();*/
+        Resources resources = getResources();
+        DisplayMetrics metrics = resources.getDisplayMetrics();
+        int px = dp * (metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        return px;
     }
 }
