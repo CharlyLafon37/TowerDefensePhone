@@ -145,24 +145,26 @@ public class SplashActivity extends AppCompatActivity
 
                                 pseudoAttacker = json.getString("attacker");
 
-                                stateView.setText("Placez votre tag couleur " + colorPlayer + " sur la table.");
                                 loadingDots.setVisibility(View.GONE);
+
+                                stateView.setText(
+                                        getString(R.string.sumup_goal_part_one)
+                                                + pseudoPlayer
+                                                + getString(R.string.sumup_goal_part_two)
+                                                + pseudoAttacker
+                                                + getString(R.string.sumup_goal_part_three));
 
                                 colorCircle.setColorFilter(colorCode);
                                 colorCircle.setVisibility(View.VISIBLE);
+
+                                buttonLaunchGame.setVisibility(View.VISIBLE);
                             }
 
                             else if(json.getString("action").equals("start"))
                             {
                                 colorCircle.setVisibility(View.GONE);
 
-                                stateView.setText(
-                                        getString(R.string.sumup_goal_part_one)
-                                        + pseudoPlayer
-                                        + getString(R.string.sumup_goal_part_two)
-                                        + pseudoAttacker
-                                        + getString(R.string.sumup_goal_part_three));
-                                buttonLaunchGame.setVisibility(View.VISIBLE);
+                                launchGameActivity();
                             }
 
                             else if(json.getString("action").equals("reset"))
