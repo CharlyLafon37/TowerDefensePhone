@@ -1,6 +1,7 @@
 package td.ez.com.towerdefense.activities;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.eyalbira.loadingdots.LoadingDots;
@@ -23,7 +25,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import td.ez.com.towerdefense.R;
 import td.ez.com.towerdefense.enums.Power;
@@ -35,6 +39,10 @@ public class SplashActivity extends AppCompatActivity
     public static final String EXTRA_PSEUDO_OTHERS = "td.ez.com.towerdefense.extrapseudoothers";
     public static final String EXTRA_POWER = "td.ez.com.towerdefense.power";
     public static final String EXTRA_GOLD = "td.ez.com.towerdefense.gold";
+    public static final String EXTRA_COLOR = "td.ez.com.towerdefense.color";
+    public static final String EXTRA_BASES = "td.ez.com.towerdefense.bases";
+    public static final String EXTRA_DOTUTORIAL = "td.ez.com.towerdefense.dotutorial";
+
 
     private Socket socket;
 
@@ -42,15 +50,23 @@ public class SplashActivity extends AppCompatActivity
     private EditText nameView;
     private Button validateButton;
     private LoadingDots loadingDots;
+    private ImageView colorCircle;
+    private Button buttonLaunchGame;
 
     private String pseudoPlayer;
     private List<String> pseudoOthers = new ArrayList<>();
+    private String pseudoAttacker;
 
     private String colorPlayer;
+    private int colorCode;
 
     private Power power;
 
     private int currentGold;
+
+    private Map<String, Integer[]> bases = new HashMap<>();
+
+    private boolean doTutorial = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -65,6 +81,17 @@ public class SplashActivity extends AppCompatActivity
         nameView = findViewById(R.id.name);
         validateButton = findViewById(R.id.sendName);
         loadingDots = findViewById(R.id.loadingDots);
+        colorCircle = findViewById(R.id.color_circle);
+        buttonLaunchGame = findViewById(R.id.buttonLaunchGame);
+
+        buttonLaunchGame.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                launchGameActivity();
+            }
+        });
 
         enableImmersiveMode();
 
@@ -123,25 +150,43 @@ public class SplashActivity extends AppCompatActivity
                                     pseudoOthers.add(namesJson.getString(i));
                                 }
 
+                                pseudoAttacker = json.getString("attacker");
+
                                 stateView.setText("Placez votre tag couleur " + colorPlayer + " sur la table.");
                                 loadingDots.setVisibility(View.GONE);
+
+                                colorCircle.setColorFilter(colorCode);
+                                colorCircle.setVisibility(View.VISIBLE);
                             }
 
                             else if(json.getString("action").equals("start"))
                             {
-                                stateView.setText("La partie peut commencer.");
-                                stateView.setTextColor(ContextCompat.getColor(SplashActivity.this, R.color.colorAccent));
+                                colorCircle.setVisibility(View.GONE);
 
-                                /***** Launching the game : starting a new activity *****/
-                                Handler handlerLaunch = new Handler();
-                                handlerLaunch.postDelayed(new Runnable()
+                                stateView.setText(
+                                        getString(R.string.sumup_goal_part_one)
+                                        + pseudoPlayer
+                                        + getString(R.string.sumup_goal_part_two)
+                                        + pseudoAttacker
+                                        + getString(R.string.sumup_goal_part_three));
+                                buttonLaunchGame.setVisibility(View.VISIBLE);
+                            }
+
+                            else if(json.getString("action").equals("reset"))
+                            {
+                                currentGold = json.getInt("gold");
+
+                                JSONArray basesJson = json.getJSONArray("bases");
+                                for(int i = 0; i < basesJson.length(); i++)
                                 {
-                                    @Override
-                                    public void run()
-                                    {
-                                        launchGameActivity();
-                                    }
-                                }, 2000);
+                                    JSONObject baseJson = basesJson.getJSONObject(i);
+                                    Integer[] hp = new Integer[2];
+                                    hp[0] = baseJson.getInt("hp");
+                                    hp[1] = baseJson.getInt("hp");
+                                    bases.put(baseJson.getString("name"), hp);
+                                }
+
+                                doTutorial = false;
                             }
                         }
                         catch (JSONException e)
@@ -211,24 +256,44 @@ public class SplashActivity extends AppCompatActivity
             @Override
             public void call(final Object... args)
             {
-                runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        JSONObject json = (JSONObject) args[0];
+                JSONObject json = (JSONObject) args[0];
 
-                        try
-                        {
-                            String color = json.getString("color");
-                            colorPlayer = color;
-                        }
-                        catch(JSONException e)
-                        {
-                            e.printStackTrace();
-                        }
+                try
+                {
+                    JSONObject colorJson = json.getJSONObject("color");
+                    colorPlayer = colorJson.getString("name");
+                    colorCode = Color.parseColor(colorJson.getString("value"));
+                }
+                catch(JSONException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        socket.on("base", new Emitter.Listener()
+        {
+            @Override
+            public void call(final Object... args)
+            {
+                JSONObject json = (JSONObject) args[0];
+
+                try
+                {
+                    JSONArray basesJson = json.getJSONArray("bases");
+                    for(int i = 0; i < basesJson.length(); i++)
+                    {
+                        JSONObject baseJson = basesJson.getJSONObject(i);
+                        Integer[] hp = new Integer[2];
+                        hp[0] = baseJson.getInt("hp");
+                        hp[1] = baseJson.getInt("hp");
+                        bases.put(baseJson.getString("name"), hp);
                     }
-                });
+                }
+                catch(JSONException e)
+                {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -280,6 +345,9 @@ public class SplashActivity extends AppCompatActivity
         gameActivity.putStringArrayListExtra(EXTRA_PSEUDO_OTHERS, (ArrayList<String>) pseudoOthers);
         gameActivity.putExtra(EXTRA_POWER, power);
         gameActivity.putExtra(EXTRA_GOLD, currentGold);
+        gameActivity.putExtra(EXTRA_COLOR, colorCode);
+        gameActivity.putExtra(EXTRA_BASES, (HashMap<String, Integer[]>) bases);
+        gameActivity.putExtra(EXTRA_DOTUTORIAL, doTutorial);
 
         startActivity(gameActivity, ActivityOptionsCompat.makeSceneTransitionAnimation(SplashActivity.this).toBundle());
     }

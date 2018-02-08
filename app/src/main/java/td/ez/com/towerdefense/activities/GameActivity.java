@@ -3,9 +3,11 @@ package td.ez.com.towerdefense.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.os.Vibrator;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
@@ -25,14 +27,17 @@ import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import td.ez.com.towerdefense.R;
@@ -40,6 +45,7 @@ import td.ez.com.towerdefense.dialogs.CustomGoldDialog;
 import td.ez.com.towerdefense.dialogs.PickPlayerDialog;
 import td.ez.com.towerdefense.enums.Power;
 import td.ez.com.towerdefense.network.SocketSingleton;
+import uk.co.deanwild.materialshowcaseview.MaterialShowcaseView;
 
 /**
  * Would be very worth to build some data binding.
@@ -51,6 +57,7 @@ public class GameActivity extends AppCompatActivity
 
     public static final String EXTRA_PLAYERPSEUDO = "td.ez.com.towerdefense.playerpseudo";
     public static final String EXTRA_GOLD = "td.ez.com.towerdefense.gold";
+    public static final String EXTRA_COLOR = "td.ez.com.towerdefense.color";
 
     private int currentGoldAmount;
     private TextView currentGoldAmountView;
@@ -63,9 +70,17 @@ public class GameActivity extends AppCompatActivity
     private boolean powerCancelMode = false;
     private ImageView powerButton;
 
+    private Map<String, Integer[]> basesPdv;
+
+    private int colorCodePlayer;
+
     private Socket socket;
 
     private Vibrator vibrator;
+
+    private boolean doTutorial;
+    private int stepTuto = 1;
+    private MaterialShowcaseView showCase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -89,6 +104,20 @@ public class GameActivity extends AppCompatActivity
         othersPseudos = launchIntent.getStringArrayListExtra(SplashActivity.EXTRA_PSEUDO_OTHERS);
         power = (Power) launchIntent.getSerializableExtra(SplashActivity.EXTRA_POWER);
         currentGoldAmount = launchIntent.getIntExtra(SplashActivity.EXTRA_GOLD, 0);
+        colorCodePlayer = launchIntent.getIntExtra(SplashActivity.EXTRA_COLOR, 0);
+        basesPdv = (Map<String, Integer[]>) launchIntent.getSerializableExtra(SplashActivity.EXTRA_BASES);
+        doTutorial = launchIntent.getBooleanExtra(SplashActivity.EXTRA_DOTUTORIAL, true);
+
+        /*** MOCK ***/
+        power = Power.FIRE; // MOCK
+        currentGoldAmount = 1000;
+        colorCodePlayer = Color.parseColor("#00C853");
+        basesPdv.put("windmill", new Integer[]{30, 30});
+        basesPdv.put("castle", new Integer[]{40, 40});
+        basesPdv.put("cathedral", new Integer[]{50, 50});
+        basesPdv.put("tavern", new Integer[]{60, 60});
+        doTutorial = true;
+        /************/
 
         TextView pseudoView = findViewById(R.id.pseudo_player);
         pseudoView.setText(playerPseudo);
@@ -98,6 +127,13 @@ public class GameActivity extends AppCompatActivity
 
         powerButton = findViewById(R.id.power_button);
         powerButton.setImageDrawable(getDrawable(power.getPowerEnabledDrawable()));
+
+        updateBasesPdv(null);
+
+        if(doTutorial)
+        {
+            setupStep1();
+        }
     }
 
     private void enableImmersiveMode()
@@ -166,7 +202,7 @@ public class GameActivity extends AppCompatActivity
             }
         });
 
-        socket.on("message", new Emitter.Listener()
+        socket.on("msg", new Emitter.Listener()
         {
             @Override
             public void call(final Object... args)
@@ -238,16 +274,13 @@ public class GameActivity extends AppCompatActivity
                         try
                         {
                             String base = json.getString("base");
-                            int delta = json.getInt("delta");
+                            int delta = json.getInt("delta"); // Delta negative.
 
                             if(delta < 0)
                             {
+                                basesPdv.get(base)[0] += delta;
+                                updateBasesPdv(base);
                                 vibrator.vibrate(100);
-                                /*Snackbar.make(
-                                        findViewById(R.id.game_layout),
-                                        base + " a perdu " + delta + " PDV.",
-                                        Snackbar.LENGTH_SHORT).show();*/
-                                // Remplacer par le nb pdv de la base en rouge
                             }
                         }
                         catch(JSONException e)
@@ -307,6 +340,94 @@ public class GameActivity extends AppCompatActivity
                 });
             }
         });
+
+        socket.on("setup", new Emitter.Listener()
+        {
+            @Override
+            public void call(final Object... args)
+            {
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        JSONObject json = (JSONObject) args[0];
+
+                        try
+                        {
+                            if(json.getString("action").equals("reset"))
+                            {
+                                showCase.hide();
+
+                                currentGoldAmount = json.getInt("gold");
+                                currentGoldAmountView.setText(Integer.toString(currentGoldAmount));
+
+                                basesPdv = new HashMap<>();
+                                JSONArray basesJson = json.getJSONArray("bases");
+                                for(int i = 0; i < basesJson.length(); i++)
+                                {
+                                    JSONObject baseJson = basesJson.getJSONObject(i);
+                                    Integer[] hp = new Integer[2];
+                                    hp[0] = baseJson.getInt("hp");
+                                    hp[1] = baseJson.getInt("hp");
+                                    basesPdv.put(baseJson.getString("name"), hp);
+                                }
+                            }
+                        }
+                        catch(JSONException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        });
+
+        if(doTutorial)
+        {
+            socket.on("tuto", new Emitter.Listener()
+            {
+                @Override
+                public void call(final Object... args)
+                {
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            JSONObject json = (JSONObject) args[0];
+
+                            try
+                            {
+                                if(json.has("status") && json.getString("status").equals("success"))
+                                {
+                                    if(stepTuto == 1)
+                                    {
+                                        stepTuto++;
+                                        showCase.hide();
+                                        setupStep2();
+                                    }
+                                    else if(stepTuto == 2)
+                                    {
+                                        stepTuto++;
+                                        setupStep3();
+                                        sendStepToServer();
+                                    }
+                                    else if(stepTuto == 3)
+                                    {
+                                        // Do nothing. The showcase is hidden and the tuto is over.
+                                    }
+                                }
+                            }
+                            catch(JSONException e)
+                            {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            });
+        }
     }
 
     /************       **********
@@ -405,7 +526,7 @@ public class GameActivity extends AppCompatActivity
             json.put("broadcast", true);
             json.put("msg", "J'ai besoin d'or !");
 
-            socket.emit("message", json);
+            socket.emit("msg", json);
         }
         catch(JSONException e)
         {
@@ -472,7 +593,144 @@ public class GameActivity extends AppCompatActivity
         Intent intent = new Intent(this, TrapActivity.class);
         intent.putExtra(EXTRA_PLAYERPSEUDO, playerPseudo);
         intent.putExtra(EXTRA_GOLD, currentGoldAmount);
+        intent.putExtra(EXTRA_COLOR, colorCodePlayer);
 
         startActivity(intent);
+    }
+
+    /************       **********
+     ************ BASE  **********
+     ************       **********/
+
+    private void updateBasesPdv(String whichOne)
+    {
+        if(whichOne == null)
+        {
+            for(Map.Entry<String, Integer[]> entry : basesPdv.entrySet())
+            {
+                TextView pdvView = null;
+                switch(entry.getKey())
+                {
+                    case "windmill" :
+                    {
+                        pdvView = findViewById(R.id.windmill_pdv_text);
+                        break;
+                    }
+                    case "castle" :
+                    {
+                        pdvView = findViewById(R.id.castle_pdv_text);
+                        break;
+                    }
+                    case "cathedral" :
+                    {
+                        pdvView = findViewById(R.id.church_pdv_text);
+                        break;
+                    }
+                    case "tavern" :
+                    {
+                        pdvView = findViewById(R.id.tavern_pdv_text);
+                        break;
+                    }
+                }
+                pdvView.setText(entry.getValue()[0] + " / " + entry.getValue()[1]);
+            }
+        }
+        else
+        {
+            TextView pdvView = null;
+            switch(whichOne)
+            {
+                case "windmill" :
+                {
+                    pdvView = findViewById(R.id.windmill_pdv_text);
+                    break;
+                }
+                case "castle" :
+                {
+                    pdvView = findViewById(R.id.castle_pdv_text);
+                    break;
+                }
+                case "cathedral" :
+                {
+                    pdvView = findViewById(R.id.church_pdv_text);
+                    break;
+                }
+                case "tavern" :
+                {
+                    pdvView = findViewById(R.id.tavern_pdv_text);
+                    break;
+                }
+            }
+            pdvView.setText(basesPdv.get(whichOne)[0] + " / " + basesPdv.get(whichOne)[1]);
+
+            pdvView.setTextColor(getColor(R.color.error));
+
+            final TextView newRef = pdvView;
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    int colorNormal = new TextView(GameActivity.this).getCurrentTextColor();
+                    newRef.setTextColor(colorNormal);
+                }
+            }, 2000);
+        }
+    }
+
+    /************       **********
+     ************ TUTO  **********
+     ************       **********/
+
+    private void sendStepToServer()
+    {
+        try
+        {
+            JSONObject json = new JSONObject();
+
+            json.put("player", playerPseudo);
+            json.put("step", stepTuto);
+
+            socket.emit("tuto", json);
+        }
+        catch(JSONException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private void setupStep1()
+    {
+        showCase = new MaterialShowcaseView.Builder(this)
+                .setContentText(R.string.showcase_step1)
+                .setDelay(500)
+                .show();
+        sendStepToServer();
+    }
+
+    private void setupStep2()
+    {
+        ImageView trapButton = findViewById(R.id.trap);
+        showCase = new MaterialShowcaseView.Builder(this)
+                .setTarget(trapButton)
+                .setContentText(R.string.showcase_step2)
+                .setDelay(1000)
+                .setDismissOnTargetTouch(true)
+                .setTargetTouchable(true)
+                .show();
+        sendStepToServer();
+    }
+
+    private void setupStep3()
+    {
+        showCase = new MaterialShowcaseView.Builder(this)
+                .setTarget(powerButton)
+                .setContentText(R.string.showcase_step3)
+                .setDelay(1000)
+                .setDismissOnTargetTouch(true)
+                .setTargetTouchable(true)
+                .show();
+        sendStepToServer();
     }
 }
