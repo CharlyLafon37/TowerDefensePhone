@@ -149,10 +149,11 @@ public class SplashActivity extends AppCompatActivity
 
                                 stateView.setText(
                                         getString(R.string.sumup_goal_part_one)
-                                                + pseudoPlayer
-                                                + " " +getString(R.string.sumup_goal_part_two)
-                                                + " " +pseudoAttacker
-                                                + " " +getString(R.string.sumup_goal_part_three));
+                                                + " " + pseudoPlayer
+                                                + getString(R.string.sumup_goal_part_two)
+                                                + " " + pseudoAttacker
+                                                + " " + getString(R.string.sumup_goal_part_three)
+                                                + "\n\n" + "Prenez votre tag couleur :");
 
                                 colorCircle.setColorFilter(colorCode);
                                 colorCircle.setVisibility(View.VISIBLE);
