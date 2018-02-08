@@ -95,7 +95,6 @@ public class GameActivity extends AppCompatActivity
         enableImmersiveMode();
 
         socket = SocketSingleton.getInstance().getSocket();
-        setupSocketListeners();
 
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
@@ -108,15 +107,17 @@ public class GameActivity extends AppCompatActivity
         basesPdv = (Map<String, Integer[]>) launchIntent.getSerializableExtra(SplashActivity.EXTRA_BASES);
         doTutorial = launchIntent.getBooleanExtra(SplashActivity.EXTRA_DOTUTORIAL, true);
 
+        setupSocketListeners();
+
         /*** MOCK ***/
-        power = Power.FIRE; // MOCK
+        /*power = Power.FIRE; // MOCK
         currentGoldAmount = 1000;
         colorCodePlayer = Color.parseColor("#00C853");
         basesPdv.put("windmill", new Integer[]{30, 30});
         basesPdv.put("castle", new Integer[]{40, 40});
         basesPdv.put("cathedral", new Integer[]{50, 50});
         basesPdv.put("tavern", new Integer[]{60, 60});
-        doTutorial = true;
+        doTutorial = true;*/
         /************/
 
         TextView pseudoView = findViewById(R.id.pseudo_player);
@@ -357,8 +358,6 @@ public class GameActivity extends AppCompatActivity
                         {
                             if(json.getString("action").equals("reset"))
                             {
-                                showCase.hide();
-
                                 currentGoldAmount = json.getInt("gold");
                                 currentGoldAmountView.setText(Integer.toString(currentGoldAmount));
 
@@ -372,6 +371,7 @@ public class GameActivity extends AppCompatActivity
                                     hp[1] = baseJson.getInt("hp");
                                     basesPdv.put(baseJson.getString("name"), hp);
                                 }
+                                updateBasesPdv(null);
                             }
                         }
                         catch(JSONException e)
@@ -702,7 +702,9 @@ public class GameActivity extends AppCompatActivity
 
     private void setupStep1()
     {
+        TextView pseudoPlayerView = findViewById(R.id.pseudo_player);
         showCase = new MaterialShowcaseView.Builder(this)
+                .setTarget(pseudoPlayerView)
                 .setContentText(R.string.showcase_step1)
                 .setDelay(500)
                 .show();

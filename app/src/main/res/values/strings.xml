@@ -4,9 +4,9 @@
     <string name="dialog_pickplayer_title">Choisissez un joueur</string>
     <string name="dialog_customgold_title">Entrez un montant et choisissez un joueur</string>
 
-    <string name="sumup_goal_part_one">Oyé chevalier </string>
-    <string name="sumup_goal_part_two"> , le monde de Crunch compte sur toi : le mage des ténèbres </string>
-    <string name="sumup_goal_part_three"> veut détruire le monde, tu dois l\'en empecher !</string>
+    <string name="sumup_goal_part_one">Oyé chevalier</string>
+    <string name="sumup_goal_part_two">, le monde de Crunch compte sur toi : le mage des ténèbres</string>
+    <string name="sumup_goal_part_three">veut détruire le monde, tu dois l\'en empecher !</string>
 
     <string name="showcase_step1">Posez une tour sur la table de jeu le long d\'un chemin du chateau.</string>
     <string name="showcase_step2">Posez un piège sur la carte.</string>
