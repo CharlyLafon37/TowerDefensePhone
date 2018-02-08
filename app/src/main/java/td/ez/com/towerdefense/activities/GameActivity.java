@@ -138,6 +138,13 @@ public class GameActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        socket.off();
+    }
+
     private void enableImmersiveMode()
     {
         final View decorView = getWindow().getDecorView();
@@ -275,7 +282,7 @@ public class GameActivity extends AppCompatActivity
                         JSONObject json = (JSONObject) args[0];
                         try
                         {
-                            String base = json.getString("base");
+                            String base = json.getString("name");
                             int delta = json.getInt("delta"); // Delta negative.
 
                             if(delta < 0)

@@ -146,6 +146,13 @@ public class TrapActivity extends AppCompatActivity
         /****/
     }
 
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        socket.off();
+    }
+
     private void setupSocketListeners()
     {
         socket.on("trap", new Emitter.Listener()

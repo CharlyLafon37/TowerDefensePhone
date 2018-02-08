@@ -101,6 +101,13 @@ public class SplashActivity extends AppCompatActivity
         setupSocketListeners();
     }
 
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        socket.off();
+    }
+
     private void enableImmersiveMode()
     {
         final View decorView = getWindow().getDecorView();
@@ -150,7 +157,7 @@ public class SplashActivity extends AppCompatActivity
                                 loadingDots.setVisibility(View.GONE);
 
 
-                                Spanned htmlText = Html.fromHtml(R.string.sumup_goal_part_one
+                                Spanned htmlText = Html.fromHtml(getString(R.string.sumup_goal_part_one)
                                         + " " + "<b>" + pseudoPlayer + "</b>"
                                         + getString(R.string.sumup_goal_part_two)
                                         + " " + "<b>" + pseudoAttacker + "</b>"
