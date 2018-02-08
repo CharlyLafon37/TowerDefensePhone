@@ -17,6 +17,7 @@ import android.transition.Explode;
 import android.transition.Slide;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
@@ -358,6 +359,9 @@ public class GameActivity extends AppCompatActivity
                         {
                             if(json.getString("action").equals("reset"))
                             {
+                                if(showCase.getParent() != null)
+                                    showCase.hide();
+
                                 currentGoldAmount = json.getInt("gold");
                                 currentGoldAmountView.setText(Integer.toString(currentGoldAmount));
 

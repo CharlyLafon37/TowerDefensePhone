@@ -7,6 +7,8 @@ import android.os.Handler;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
+import android.text.Spanned;
 import android.transition.Slide;
 import android.view.Gravity;
 import android.view.View;
@@ -147,13 +149,15 @@ public class SplashActivity extends AppCompatActivity
 
                                 loadingDots.setVisibility(View.GONE);
 
-                                stateView.setText(
-                                        getString(R.string.sumup_goal_part_one)
-                                                + " " + pseudoPlayer
-                                                + getString(R.string.sumup_goal_part_two)
-                                                + " " + pseudoAttacker
-                                                + " " + getString(R.string.sumup_goal_part_three)
-                                                + "\n\n" + "Prenez votre tag couleur :");
+
+                                Spanned htmlText = Html.fromHtml(R.string.sumup_goal_part_one
+                                        + " " + "<b>" + pseudoPlayer + "</b>"
+                                        + getString(R.string.sumup_goal_part_two)
+                                        + " " + "<b>" + pseudoAttacker + "</b>"
+                                        + " " + getString(R.string.sumup_goal_part_three)
+                                        + "<br><br>" + "<center>" + "Prenez votre tag couleur :" + "</center>");
+
+                                stateView.setText(htmlText);
 
                                 colorCircle.setColorFilter(colorCode);
                                 colorCircle.setVisibility(View.VISIBLE);
