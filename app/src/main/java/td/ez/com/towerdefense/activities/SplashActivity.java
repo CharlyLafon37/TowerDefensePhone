@@ -99,13 +99,6 @@ public class SplashActivity extends AppCompatActivity
         setupSocketListeners();
     }
 
-    @Override
-    protected void onStop()
-    {
-        super.onStop();
-        socket.off();
-    }
-
     private void enableImmersiveMode()
     {
         final View decorView = getWindow().getDecorView();
@@ -340,6 +333,8 @@ public class SplashActivity extends AppCompatActivity
 
     private void launchGameActivity()
     {
+        socket.off();
+
         Intent gameActivity = new Intent(SplashActivity.this, GameActivity.class);
         gameActivity.putExtra(EXTRA_PSEUDO_PLAYER, pseudoPlayer);
         gameActivity.putStringArrayListExtra(EXTRA_PSEUDO_OTHERS, (ArrayList<String>) pseudoOthers);
