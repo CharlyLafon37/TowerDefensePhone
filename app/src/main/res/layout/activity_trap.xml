@@ -8,9 +8,18 @@
     android:layout_height="match_parent"
     tools:context="td.ez.com.towerdefense.activities.TrapActivity">
 
-    <com.github.chrisbanes.photoview.PhotoView
+    <ImageView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:src="@drawable/map"
+        android:scaleType="fitXY"/>
+
+    <ImageView
+        android:id="@+id/circular_target"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:src="@drawable/circular_target"
+        android:scaleType="centerCrop"/>
 
 </FrameLayout>

@@ -7,9 +7,10 @@
     <string name="sumup_goal_part_one">Oyé chevalier</string>
     <string name="sumup_goal_part_two">, le monde de Crunch compte sur toi : le mage des ténèbres</string>
     <string name="sumup_goal_part_three">veut détruire le monde, tu dois l\'en empecher !</string>
+    <string name="sumup_goal_part_four">Protège toutes les bases pendant 10 minutes et la victoire sera
+    aux défenseurs.</string>
 
     <string name="showcase_step1">Posez votre tag sur la table de jeu le long d\'un chemin du chateau pour créer une tour.</string>
     <string name="showcase_step2">Posez un piège sur la carte en appuyant à sur l\'endroit que vous souhaitez.</string>
-    <string name="showcase_step3">Utilisez votre pouvoir. Appuyez sur ce bouton puis posez votre tag sur la table
-    à l'endroit où vous voulez déclencher votre pouvoir.</string>
+    <string name="showcase_step3">Pouvoir : appuyez sur ce bouton puis posez votre tag sur la table à l\'endroit choisi.</string>
 </resources>

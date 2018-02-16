@@ -54,6 +54,7 @@ public class SplashActivity extends AppCompatActivity
     private LoadingDots loadingDots;
     private ImageView colorCircle;
     private Button buttonLaunchGame;
+    private TextView instructionsView;
 
     private String pseudoPlayer;
     private List<String> pseudoOthers = new ArrayList<>();
@@ -85,6 +86,7 @@ public class SplashActivity extends AppCompatActivity
         loadingDots = findViewById(R.id.loadingDots);
         colorCircle = findViewById(R.id.color_circle);
         buttonLaunchGame = findViewById(R.id.buttonLaunchGame);
+        instructionsView = findViewById(R.id.instructions);
 
         buttonLaunchGame.setOnClickListener(new View.OnClickListener()
         {
@@ -99,13 +101,6 @@ public class SplashActivity extends AppCompatActivity
 
         socket = SocketSingleton.getInstance().getSocket();
         setupSocketListeners();
-    }
-
-    @Override
-    protected void onDestroy()
-    {
-        super.onDestroy();
-        socket.off();
     }
 
     private void enableImmersiveMode()
@@ -162,9 +157,11 @@ public class SplashActivity extends AppCompatActivity
                                         + getString(R.string.sumup_goal_part_two)
                                         + " " + "<b>" + pseudoAttacker + "</b>"
                                         + " " + getString(R.string.sumup_goal_part_three)
-                                        + "<br><br>" + "<center>" + "Prenez votre tag couleur :" + "</center>");
-
+                                        + "<br>" + getString(R.string.sumup_goal_part_four));
                                 stateView.setText(htmlText);
+
+                                instructionsView.setText("Prenez votre tag couleur :");
+                                instructionsView.setVisibility(View.VISIBLE);
 
                                 colorCircle.setColorFilter(colorCode);
                                 colorCircle.setVisibility(View.VISIBLE);

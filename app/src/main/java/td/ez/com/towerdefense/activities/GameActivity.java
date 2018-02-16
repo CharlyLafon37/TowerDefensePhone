@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Typeface;
+import android.media.MediaPlayer;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Vibrator;
@@ -45,6 +46,7 @@ import td.ez.com.towerdefense.R;
 import td.ez.com.towerdefense.dialogs.CustomGoldDialog;
 import td.ez.com.towerdefense.dialogs.PickPlayerDialog;
 import td.ez.com.towerdefense.enums.Power;
+import td.ez.com.towerdefense.listeners.ShakeListener;
 import td.ez.com.towerdefense.network.SocketSingleton;
 import uk.co.deanwild.materialshowcaseview.MaterialShowcaseView;
 
@@ -83,6 +85,10 @@ public class GameActivity extends AppCompatActivity
     private int stepTuto = 1;
     private MaterialShowcaseView showCase;
 
+    private MediaPlayer mediaPlayer;
+
+    private ShakeListener shakeListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -111,24 +117,58 @@ public class GameActivity extends AppCompatActivity
         setupSocketListeners();
 
         /*** MOCK ***/
-        /*power = Power.FIRE; // MOCK
+        power = Power.ICE;
         currentGoldAmount = 1000;
         colorCodePlayer = Color.parseColor("#00C853");
+        basesPdv = new HashMap<>();
         basesPdv.put("windmill", new Integer[]{30, 30});
         basesPdv.put("castle", new Integer[]{40, 40});
         basesPdv.put("cathedral", new Integer[]{50, 50});
         basesPdv.put("tavern", new Integer[]{60, 60});
-        doTutorial = true;*/
+        doTutorial = false;
         /************/
 
         TextView pseudoView = findViewById(R.id.pseudo_player);
         pseudoView.setText(playerPseudo);
+        pseudoView.setTextColor(colorCodePlayer);
 
         currentGoldAmountView = findViewById(R.id.current_gold);
         currentGoldAmountView.setText(Integer.toString(currentGoldAmount));
 
         powerButton = findViewById(R.id.power_button);
         powerButton.setImageDrawable(getDrawable(power.getPowerEnabledDrawable()));
+
+        shakeListener = new ShakeListener(this);
+        shakeListener.setOnShakeListener(new ShakeListener.OnShakeListener()
+        {
+            @Override
+            public void onShake()
+            {
+                if(powerEnabled && !powerCancelMode)
+                {
+                    try
+                    {
+                        JSONObject json = new JSONObject();
+                        json.put("player", playerPseudo);
+                        json.put("power", power.toString());
+                        json.put("action", "use");
+
+                        socket.emit("power", json);
+                    }
+                    catch(JSONException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    powerCancelMode = true;
+
+                    TextView textPowerView = findViewById(R.id.power_button_text);
+                    textPowerView.setVisibility(View.VISIBLE);
+                    textPowerView.setText("X");
+                    textPowerView.setTypeface(null, Typeface.BOLD);
+                    textPowerView.setTextSize(35f);
+                }
+            }
+        });
 
         updateBasesPdv(null);
 
@@ -139,10 +179,17 @@ public class GameActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onDestroy()
+    protected void onPause()
     {
-        super.onDestroy();
-        socket.off();
+        super.onPause();
+        shakeListener.pause();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        shakeListener.resume();
     }
 
     private void enableImmersiveMode()
@@ -289,7 +336,7 @@ public class GameActivity extends AppCompatActivity
                             {
                                 basesPdv.get(base)[0] += delta;
                                 updateBasesPdv(base);
-                                vibrator.vibrate(100);
+                                vibrator.vibrate(500);
                             }
                         }
                         catch(JSONException e)
@@ -312,11 +359,29 @@ public class GameActivity extends AppCompatActivity
                     public void run()
                     {
                         JSONObject json = (JSONObject) args[0];
+
                         try
                         {
                             if(json.getString("status").equals("success"))
                             {
+                                /**** Playing the sound effect ****/
+                                mediaPlayer = MediaPlayer.create(GameActivity.this, power.getResSoundEffect());
+                                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
+                                {
+                                    @Override
+                                    public void onCompletion(MediaPlayer mediaPlayer)
+                                    {
+                                        mediaPlayer.release();
+                                        mediaPlayer = null; // MediaPlayer being a factory, we have to let go
+                                                            // the instance as soon as we don't need it
+                                                            // anymore : the reference will be useless afterwards anyway.
+                                    }
+                                });
+                                mediaPlayer.start();
+
+                                /**** Setting up the cooldown ****/
                                 powerEnabled = false;
+                                powerCancelMode = false;
                                 powerButton.setImageDrawable(getDrawable(power.getPowerDisabledDrawable()));
 
                                 final TextView textPowerView = findViewById(R.id.power_button_text);
@@ -333,7 +398,7 @@ public class GameActivity extends AppCompatActivity
                                     {
                                         powerEnabled = true;
                                         powerButton.setImageDrawable(getDrawable(power.getPowerEnabledDrawable()));
-                                        vibrator.vibrate(150);
+                                        vibrator.vibrate(500);
                                         textPowerView.setVisibility(View.INVISIBLE);
                                     }
                                 };
@@ -366,7 +431,7 @@ public class GameActivity extends AppCompatActivity
                         {
                             if(json.getString("action").equals("reset"))
                             {
-                                if(showCase.getParent() != null)
+                                if(showCase != null && showCase.getParent() != null)
                                     showCase.hide();
 
                                 currentGoldAmount = json.getInt("gold");
@@ -422,7 +487,6 @@ public class GameActivity extends AppCompatActivity
                                     {
                                         stepTuto++;
                                         setupStep3();
-                                        sendStepToServer();
                                     }
                                     else if(stepTuto == 3)
                                     {
@@ -555,21 +619,16 @@ public class GameActivity extends AppCompatActivity
      ************ POWER **********
      ************       **********/
 
-
-    public void onClickPowerButton(View v)
+    public void cancelPower(View v)
     {
-        if(powerEnabled)
+        if(powerEnabled && powerCancelMode)
         {
             try
             {
                 JSONObject json = new JSONObject();
                 json.put("player", playerPseudo);
                 json.put("power", power.toString());
-
-                if(!powerCancelMode)
-                    json.put("action", "use");
-                else
-                    json.put("action", "cancel");
+                json.put("action", "cancel");
 
                 socket.emit("power", json);
             }
@@ -578,20 +637,9 @@ public class GameActivity extends AppCompatActivity
                 e.printStackTrace();
             }
 
-            final TextView textPowerView = findViewById(R.id.power_button_text);
-            if(!powerCancelMode)
-            {
-                textPowerView.setVisibility(View.VISIBLE);
-                textPowerView.setText("X");
-                textPowerView.setTypeface(null, Typeface.BOLD);
-                textPowerView.setTextSize(35f);
-                powerCancelMode = true;
-            }
-            else
-            {
-                textPowerView.setVisibility(View.INVISIBLE);
-                powerCancelMode = false;
-            }
+            TextView textPowerView = findViewById(R.id.power_button_text);
+            textPowerView.setVisibility(View.INVISIBLE);
+            powerCancelMode = false;
         }
     }
 
