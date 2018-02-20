@@ -17,9 +17,10 @@
 
     <ImageView
         android:id="@+id/circular_target"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:src="@drawable/circular_target"
-        android:scaleType="centerCrop"/>
+        android:scaleType="centerCrop"
+        android:layout_gravity="center"/>
 
 </FrameLayout>

@@ -12,6 +12,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Vibrator;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
@@ -45,6 +46,7 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
     private final int TRAP_SIZE_DP = 30;
 
     private ImageView mapView;
+    private ImageView circularTargetView;
 
     private int screenWidth;
     private int screenHeight;
@@ -56,14 +58,10 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
 
     private Socket socket;
 
-    private Point lastNewTrapPositionAbsolute;
-
-    private List<ImageView> trapsView = new ArrayList<>();
-
     private SensorManager sensorManager;
-    private Sensor accelerometer, magnitude;
+    private Sensor accelerometer;
 
-    private float[] valuesAcceleration, valuesMagnitude;
+    private Vibrator vibrator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -80,12 +78,11 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        magnitude = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         if(accelerometer != null)
             sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
-        if(magnitude != null)
-            sensorManager.registerListener(this, magnitude, SensorManager.SENSOR_DELAY_GAME);
 
         socket = SocketSingleton.getInstance().getSocket();
         setupSocketListeners();
@@ -93,6 +90,9 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
         requestAllTraps();
 
         mapView = findViewById(R.id.mapView);
+
+        circularTargetView = findViewById(R.id.circular_target);
+        circularTargetView.setColorFilter(Color.WHITE);
 
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
@@ -122,7 +122,6 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
         if(sensorManager != null)
         {
             sensorManager.unregisterListener(this, accelerometer);
-            sensorManager.unregisterListener(this, magnitude);
         }
     }
 
@@ -132,8 +131,6 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
         super.onResume();
         if(accelerometer != null)
             sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
-        if(magnitude != null)
-            sensorManager.registerListener(this, magnitude, SensorManager.SENSOR_DELAY_GAME);
     }
 
     private void setupSocketListeners()
@@ -154,10 +151,7 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
                             // Print the trap just put by the player
                             if(json.has("status") && json.getString("status").equals("success"))
                             {
-                                FrameLayout frameLayout = findViewById(R.id.layout_trap);
-                                //float currentScale = mapView.getScale();
-
-                                //printTrap(frameLayout, (int) (TRAP_SIZE_DP * currentScale), lastNewTrapPositionAbsolute, colorCodePlayer);
+                                circularTargetView.setColorFilter(Color.GREEN);
 
                                 new Handler().postDelayed(new Runnable()
                                 {
@@ -168,6 +162,25 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
                                         finish();
                                     }
                                 }, 1000);
+                            }
+
+                            else if(json.has("status") && json.getString("status").equals("failure"))
+                            {
+                                vibrator.vibrate(300);
+
+                                circularTargetView.setColorFilter(Color.RED);
+                                Handler handler = new Handler();
+                                handler.postDelayed(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        circularTargetView.setColorFilter(Color.WHITE);
+                                    }
+                                }, 1000);
+
+                                if(accelerometer != null)
+                                    sensorManager.registerListener(TrapActivity.this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
                             }
 
                             // Print all the traps sent by the server
@@ -248,8 +261,6 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
             {
                 e.printStackTrace();
             }
-
-            //mockSuccess();
         }
         else
         {
@@ -295,12 +306,10 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
 
         trapImg.setColorFilter(colorCode);
 
-        trapImg.setX(position.x - nbPixels / 2);
-        trapImg.setY(position.y - nbPixels / 2);
+        trapImg.setX(position.x);
+        trapImg.setY(position.y);
 
         layout.addView(trapImg);
-
-        trapsView.add(trapImg);
     }
 
     private int convertDpToPixel(int dp)
@@ -316,26 +325,36 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
     {
         if(sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
         {
-            valuesAcceleration = sensorEvent.values;
-        }
-        else if(sensorEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
-        {
-            valuesMagnitude = sensorEvent.values;
-        }
+            int currentX = (int) circularTargetView.getX();
+            int currentY = (int) circularTargetView.getY();
 
-        if(valuesAcceleration != null && valuesMagnitude != null)
-        {
-            float[] rotationMatrix = new float[9];
-            System.out.println("Get Orientation : " + SensorManager.getRotationMatrix(rotationMatrix, null, valuesAcceleration, valuesMagnitude));
+            // Handling when trying to move out of the screen
+            if(currentX >= (screenWidth - circularTargetView.getWidth())
+                    || currentY >= (screenHeight - circularTargetView.getHeight()))
+                return;
 
-            float[] orientation = new float[3];
-            SensorManager.getOrientation(rotationMatrix, orientation);
-
-            for(float value : orientation)
-                System.out.println(value);
+            circularTargetView.setX(currentX + sensorEvent.values[1] * 2);
+            circularTargetView.setY(currentY + sensorEvent.values[0] * 2);
         }
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) { }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event)
+    {
+        Point positionTrap = new Point();
+        positionTrap.x = (int) (circularTargetView.getX() + circularTargetView.getWidth() / 2);
+        positionTrap.y = (int) (circularTargetView.getY() + circularTargetView.getHeight() / 2);
+
+        sendTrap(positionTrap);
+
+        if(sensorManager != null)
+        {
+            sensorManager.unregisterListener(this, accelerometer);
+        }
+
+        return super.onTouchEvent(event);
+    }
 }
