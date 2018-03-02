@@ -12,6 +12,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.os.Vibrator;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -45,6 +46,8 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
     private final int TRAP_PRICE = 30;
     private final int TRAP_SIZE_DP = 30;
 
+    private final long CLICK_MAXDELAY = 200;
+
     private ImageView mapView;
     private ImageView circularTargetView;
 
@@ -62,6 +65,9 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
     private Sensor accelerometer;
 
     private Vibrator vibrator;
+
+    private long timeClick;
+    private int xClick;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -101,7 +107,7 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
         screenHeight = metrics.heightPixels;
 
         /**** MOCK ****/
-        Trap trap1 = new Trap();
+        /*Trap trap1 = new Trap();
         trap1.colorCode = colorCodePlayer;
         trap1.position = new Point(530, 630);
 
@@ -111,7 +117,7 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
 
         FrameLayout frameLayout = findViewById(R.id.layout_trap);
         printTrap(frameLayout, TRAP_SIZE_DP, trap1.position, trap1.colorCode);
-        printTrap(frameLayout, TRAP_SIZE_DP, trap2.position, trap2.colorCode);
+        printTrap(frameLayout, TRAP_SIZE_DP, trap2.position, trap2.colorCode);*/
         /****/
     }
 
@@ -306,8 +312,8 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
 
         trapImg.setColorFilter(colorCode);
 
-        trapImg.setX(position.x);
-        trapImg.setY(position.y);
+        trapImg.setX(position.x - nbPixels / 2);
+        trapImg.setY(position.y - nbPixels / 2);
 
         layout.addView(trapImg);
     }
@@ -328,13 +334,20 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
             int currentX = (int) circularTargetView.getX();
             int currentY = (int) circularTargetView.getY();
 
+            float newX, newY;
+
+            newX = currentX + sensorEvent.values[1] * 2;
+            newY = currentY + sensorEvent.values[0] * 2;
+
             // Handling when trying to move out of the screen
-            if(currentX >= (screenWidth - circularTargetView.getWidth())
-                    || currentY >= (screenHeight - circularTargetView.getHeight()))
+            if(newX >= (screenWidth - circularTargetView.getWidth())
+                    || newY >= (screenHeight - circularTargetView.getHeight()))
+                return;
+            if(newX <= 0 || newY <= 0)
                 return;
 
-            circularTargetView.setX(currentX + sensorEvent.values[1] * 2);
-            circularTargetView.setY(currentY + sensorEvent.values[0] * 2);
+            circularTargetView.setX(newX);
+            circularTargetView.setY(newY);
         }
     }
 
@@ -344,15 +357,26 @@ public class TrapActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
-        Point positionTrap = new Point();
-        positionTrap.x = (int) (circularTargetView.getX() + circularTargetView.getWidth() / 2);
-        positionTrap.y = (int) (circularTargetView.getY() + circularTargetView.getHeight() / 2);
-
-        sendTrap(positionTrap);
-
-        if(sensorManager != null)
+        if(event.getAction() == MotionEvent.ACTION_DOWN)
         {
-            sensorManager.unregisterListener(this, accelerometer);
+            timeClick = System.currentTimeMillis();
+            xClick = (int) event.getX();
+        }
+        if(event.getAction() == MotionEvent.ACTION_UP)
+        {
+            if((System.currentTimeMillis() - timeClick < CLICK_MAXDELAY) && (Math.abs((int) event.getX() - xClick) < 20))
+            {
+                Point positionTrap = new Point();
+                positionTrap.x = (int) (circularTargetView.getX() + circularTargetView.getWidth() / 2);
+                positionTrap.y = (int) (circularTargetView.getY() + circularTargetView.getHeight() / 2);
+
+                sendTrap(positionTrap);
+
+                if(sensorManager != null)
+                {
+                    sensorManager.unregisterListener(this, accelerometer);
+                }
+            }
         }
 
         return super.onTouchEvent(event);

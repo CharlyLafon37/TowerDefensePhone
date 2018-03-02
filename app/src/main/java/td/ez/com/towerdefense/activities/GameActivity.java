@@ -117,7 +117,8 @@ public class GameActivity extends AppCompatActivity
         setupSocketListeners();
 
         /*** MOCK ***/
-        power = Power.ICE;
+        /*power = Power.ICE;
+        playerPseudo = "Wazza";
         currentGoldAmount = 1000;
         colorCodePlayer = Color.parseColor("#00C853");
         basesPdv = new HashMap<>();
@@ -125,7 +126,7 @@ public class GameActivity extends AppCompatActivity
         basesPdv.put("castle", new Integer[]{40, 40});
         basesPdv.put("cathedral", new Integer[]{50, 50});
         basesPdv.put("tavern", new Integer[]{60, 60});
-        doTutorial = false;
+        doTutorial = false;*/
         /************/
 
         TextView pseudoView = findViewById(R.id.pseudo_player);
@@ -211,6 +212,7 @@ public class GameActivity extends AppCompatActivity
                     public void run()
                     {
                         JSONObject json = (JSONObject) args[0];
+                        System.out.println(json.toString());
                         try
                         {
                             String from = json.getString("from");
